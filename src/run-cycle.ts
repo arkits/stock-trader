@@ -3,7 +3,8 @@ import type { Config } from "./config";
 import type { MarketDataClient } from "./market-data";
 import { getTradingDecision, type OpenRouterResponse } from "./openrouter";
 import { executeActions } from "./executor";
-import { insertRun, insertPortfolioSnapshot } from "./db";
+import { insertRun, insertPortfolioSnapshot, getRunHistory } from "./db";
+import { buildResearchContext } from "./research";
 
 export type RunCycleDeps = {
   alpaca: AlpacaClient;
@@ -20,10 +21,17 @@ export async function runCycle(deps: RunCycleDeps): Promise<void> {
   const openOrders = await alpaca.getOpenOrders();
 
   const positionSymbols = positions.map((p) => p.symbol);
+  let researchContext = await buildResearchContext({ marketData, config });
   const symbols = [
-    ...new Set([...config.trading.symbols, ...positionSymbols]),
+    ...new Set([
+      ...config.trading.symbols,
+      ...positionSymbols,
+      ...researchContext.researchSymbols,
+      ...config.trading.marketConditionSymbols,
+    ]),
   ].filter(Boolean);
   const snapshots = await marketData.getSnapshots(symbols);
+  const recentRuns = getRunHistory(10);
 
   let reasoning = "";
   let actions: OpenRouterResponse["actions"] = [];
@@ -36,6 +44,8 @@ export async function runCycle(deps: RunCycleDeps): Promise<void> {
       positions,
       openOrders,
       snapshots,
+      recentRuns,
+      researchContext,
     });
     reasoning = decision.reasoning;
     actions = decision.actions;
@@ -45,6 +55,7 @@ export async function runCycle(deps: RunCycleDeps): Promise<void> {
       config,
       actions: decision.actions,
       dryRun: config.trading.dryRun,
+      allowedSymbols: symbols,
     });
   } catch (err) {
     errors.push(err instanceof Error ? err.message : String(err));

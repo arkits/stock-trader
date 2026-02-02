@@ -25,6 +25,9 @@ export interface Config {
     dryRun: boolean;
     symbols: string[];
     maxOrderNotional?: number;
+    researchMode: boolean;
+    researchSymbolsCap: number;
+    marketConditionSymbols: string[];
   };
 }
 
@@ -57,6 +60,15 @@ export function loadConfig(): Config {
       maxOrderNotional: process.env.MAX_ORDER_NOTIONAL
         ? parseFloat(process.env.MAX_ORDER_NOTIONAL)
         : undefined,
+      researchMode: getEnvOptional("RESEARCH_MODE", "false").toLowerCase() === "true",
+      researchSymbolsCap: Math.max(
+        0,
+        parseInt(getEnvOptional("RESEARCH_SYMBOLS_CAP", "10"), 10) || 10
+      ),
+      marketConditionSymbols: getEnvOptional("MARKET_CONDITION_SYMBOLS", "SPY,QQQ")
+        .split(",")
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean),
     },
   };
 }
