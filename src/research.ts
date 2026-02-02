@@ -1,6 +1,10 @@
 import type { Config } from "./config";
 import type { MarketDataClient } from "./market-data";
 import type { SymbolSnapshot } from "./market-data";
+import type { ResearchAnalysis } from "./research-engine";
+import { buildResearchAnalysis } from "./research-engine";
+import { loadResearchData } from "./research-data";
+import type { Position } from "./alpaca";
 
 export type ResearchContext = {
   topGainers: string[];
@@ -8,6 +12,9 @@ export type ResearchContext = {
   mostActive: string[];
   marketConditionSnapshots: Record<string, SymbolSnapshot>;
   researchSymbols: string[];
+  analysis?: ResearchAnalysis;
+  eligibleSymbols: string[];
+  excludedSymbols: Array<{ symbol: string; reasons: string[] }>;
 };
 
 const EMPTY_RESEARCH: ResearchContext = {
@@ -16,13 +23,17 @@ const EMPTY_RESEARCH: ResearchContext = {
   mostActive: [],
   marketConditionSnapshots: {},
   researchSymbols: [],
+  analysis: undefined,
+  eligibleSymbols: [],
+  excludedSymbols: [],
 };
 
 export async function buildResearchContext(deps: {
   marketData: MarketDataClient;
   config: Config;
+  positions: Position[];
 }): Promise<ResearchContext> {
-  const { marketData, config } = deps;
+  const { marketData, config, positions } = deps;
   if (!config.trading.researchMode) {
     return EMPTY_RESEARCH;
   }
@@ -41,6 +52,17 @@ export async function buildResearchContext(deps: {
   const topGainers = movers.gainers.slice(0, halfCap);
   const topLosers = movers.losers.slice(0, halfCap);
   const researchSymbols = [...new Set([...topGainers, ...topLosers, ...mostActive])].slice(0, cap);
+  const snapshots = await marketData.getSnapshots(researchSymbols);
+  const researchData = loadResearchData();
+  const analysis = buildResearchAnalysis({
+    symbols: researchSymbols,
+    snapshots,
+    positions,
+    researchData,
+    config,
+  });
+  const eligibleSymbols = analysis.candidates.map((c) => c.symbol);
+  const excludedSymbols = analysis.excluded.map((e) => ({ symbol: e.symbol, reasons: e.reasons }));
 
   return {
     topGainers,
@@ -48,5 +70,8 @@ export async function buildResearchContext(deps: {
     mostActive,
     marketConditionSnapshots,
     researchSymbols,
+    analysis,
+    eligibleSymbols,
+    excludedSymbols,
   };
 }

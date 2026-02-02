@@ -36,6 +36,23 @@ Copy `.env.example` to `.env` and set the values below.
 | `MAX_ORDER_NOTIONAL` | — | Max dollar amount per order (e.g. `1000`). |
 | `DATA_DIR` | `data` | Directory for SQLite run history file. |
 | `PORT` | `4108` | HTTP server port. |
+| `RESEARCH_MODE` | `false` | Enable research mode scoring, ranking, and research context. |
+| `RESEARCH_SYMBOLS_CAP` | `10` | Max number of research symbols from movers/actives. |
+| `MARKET_CONDITION_SYMBOLS` | `SPY,QQQ` | Symbols used to gauge market regime. |
+| `RISK_MODE` | `balanced` | Research presets: `conservative`, `balanced`, `aggressive`. |
+| `RESEARCH_CONFIDENCE_FLOOR` | varies | Skip trades below this confidence. |
+| `RESEARCH_RECENCY_HALF_LIFE_DAYS` | varies | Half-life for news/earnings decay. |
+| `RESEARCH_WEIGHTS` | varies | Override weights, e.g. `fundamentals=0.3,technicals=0.25,macro=0.15,sentiment=0.1,quality=0.1,valuation=0.1`. |
+| `RESEARCH_MAX_CORRELATION` | varies | Max correlation to portfolio before excluding. |
+| `RESEARCH_SECTOR_CAP` | varies | Max sector exposure before excluding. |
+| `RESEARCH_INDUSTRY_CAP` | varies | Max industry exposure before excluding. |
+| `RESEARCH_MIN_MARKET_CAP` | varies | Minimum market cap filter. |
+| `RESEARCH_MIN_DOLLAR_VOLUME` | varies | Minimum average dollar volume filter. |
+| `RESEARCH_MAX_DRAWDOWN` | varies | Max drawdown threshold before excluding. |
+| `RESEARCH_EXCLUDE_SECTORS` | — | Comma-separated sector exclusions. |
+| `RESEARCH_EXCLUDE_INDUSTRIES` | — | Comma-separated industry exclusions. |
+| `RESEARCH_EXCLUDE_SYMBOLS` | — | Comma-separated symbol exclusions. |
+| `RESEARCH_DATA_DIR` | `data/research` | Directory for JSON research inputs. |
 
 ---
 
@@ -91,6 +108,28 @@ bun run start
 - Default is **paper trading** (`APCA_API_BASE_URL` paper) and **dry run** (`DRY_RUN=true`). No real orders until you set live URL and `DRY_RUN=false`.  
 - Only symbols in `SYMBOLS` are traded.  
 - Use `MAX_ORDER_NOTIONAL` to cap order size if desired.
+
+---
+
+## Research Data Inputs
+
+Research mode reads JSON inputs from `RESEARCH_DATA_DIR` (default `data/research`). Each file is optional; missing files simply reduce data quality.
+
+Files:
+- `fundamentals.json`
+- `technicals.json`
+- `macro.json`
+- `news.json`
+- `earnings.json`
+- `insider.json`
+- `institutional.json`
+- `liquidity.json`
+- `risk.json`
+- `sources.json`
+
+Each file should be a JSON object keyed by symbol (except `macro.json`, which is a single object). The bot uses this data to build scorecards, apply filters, and power paper-trade feedback loops.
+
+`sources.json` should map each symbol to an array of source IDs or URLs used for tool-first evidence in the LLM scorecard.
 
 ---
 
