@@ -25,6 +25,16 @@ export type Order = {
   status: string;
 };
 
+export type PortfolioHistoryPoint = {
+  createdAt: string;
+  equity: string;
+};
+
+export type PortfolioHistoryParams = {
+  period?: "1D" | "1W" | "1A" | "1M";
+  timeframe?: "1D" | "1H" | "15Min" | "5Min" | "1Min";
+};
+
 export function createAlpacaClient(config: Config) {
   const alpaca = new Alpaca({
     keyId: config.alpaca.keyId,
@@ -42,6 +52,33 @@ export function createAlpacaClient(config: Config) {
         cash: acc.cash ?? "0",
         tradingBlocked: acc.trading_blocked ?? false,
       };
+    },
+
+    async getPortfolioHistory(
+      params: PortfolioHistoryParams = {}
+    ): Promise<PortfolioHistoryPoint[]> {
+      const { period = "1M", timeframe = "1D" } = params;
+      const raw = (await (alpaca.getPortfolioHistory as (opts: {
+        period?: string;
+        timeframe?: string;
+      }) => Promise<unknown>)({ period, timeframe })) as {
+        timestamp?: number[];
+        equity?: number[];
+      } | null;
+      if (!raw?.timestamp?.length || !raw?.equity?.length) {
+        return [];
+      }
+      const len = Math.min(raw.timestamp.length, raw.equity.length);
+      const result: PortfolioHistoryPoint[] = [];
+      for (let i = 0; i < len; i++) {
+        const ts = raw.timestamp[i];
+        const eq = raw.equity[i];
+        result.push({
+          createdAt: new Date(ts * 1000).toISOString(),
+          equity: String(eq),
+        });
+      }
+      return result;
     },
 
     async getPositions(): Promise<Position[]> {

@@ -169,6 +169,12 @@ bun run start
      SYMBOLS=AAPL,GOOGL,MSFT
    ```
 
-5. The app listens on `PORT` (set by Dokku). Open the app URL (e.g. `https://stock-trader.yourdomain.com`) to use the dashboard.
+5. The app listens on `PORT` (set by Dokku from the Dockerfile `EXPOSE 4108`). Open the app URL to use the dashboard.
+
+**Accessing the app:** Dokku’s proxy (nginx) listens on the exposed port, not Docker’s `-p`. Use the app’s **vhost** with that port:
+
+- On the server, run `dokku urls stock-trader` to see the URL (e.g. `http://stock-trader.agnee:4108`).
+- Use that full URL in the browser (e.g. `http://stock-trader.agnee:4108`), not `http://agnee:4108` unless the app’s domain is set to the bare hostname.
+- If `agnee:4108` is refused: (1) Try `http://stock-trader.agnee:4108`. (2) Ensure port 4108 is open: `sudo ufw allow 4108 && sudo ufw reload` (if using UFW). (3) Check mapping: `dokku ports:list stock-trader` (should show `http 4108 4108`). To force it: `dokku ports:set stock-trader http:4108:4108`.
 
 The `app.json` healthchecks tell Dokku to wait 5 seconds after deploy, then `GET /`; the app is considered up when that returns 200.

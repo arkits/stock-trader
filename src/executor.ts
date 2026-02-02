@@ -1,5 +1,6 @@
 import type { AlpacaClient } from "./alpaca";
 import type { Config } from "./config";
+import { notifyTrade } from "./gotify";
 import type { TradingAction } from "./openrouter";
 
 export type OrderResult = {
@@ -68,11 +69,17 @@ export async function executeActions(params: {
         type: "market",
         timeInForce: "day",
       });
-      results.push({
-        symbol,
-        side: a.action,
-        orderId: order.id,
-      });
+      const result = { symbol, side: a.action, orderId: order.id };
+      results.push(result);
+      try {
+        await notifyTrade({
+          symbol,
+          side: a.action,
+          orderId: order.id,
+        });
+      } catch {
+        // Gotify is optional; never let notification failure affect the trade
+      }
     } catch (err) {
       results.push({
         symbol,

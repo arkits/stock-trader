@@ -3,7 +3,7 @@ import type { Config } from "./config";
 import type { MarketDataClient } from "./market-data";
 import { getTradingDecision, type OpenRouterResponse } from "./openrouter";
 import { executeActions } from "./executor";
-import { insertRun } from "./db";
+import { insertRun, insertPortfolioSnapshot } from "./db";
 
 export type RunCycleDeps = {
   alpaca: AlpacaClient;
@@ -56,4 +56,5 @@ export async function runCycle(deps: RunCycleDeps): Promise<void> {
     ordersPlaced,
     errors,
   });
+  insertPortfolioSnapshot(account.equity);
 }
