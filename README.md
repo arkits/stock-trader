@@ -130,7 +130,7 @@ bun run start
 |------|---------|
 | `Dockerfile` | Builds with Bun, installs deps, builds dashboard, runs server. Listens on `PORT`. |
 | `.dockerignore` | Excludes `.env`, `node_modules`, `data/`, etc. from the image. |
-| `CHECKS` | Dokku health check: after deploy, `GET /` must return 200. |
+| `app.json` | Dokku healthchecks: after deploy, `GET /` must return 200 (startup check). |
 
 ### Deploy with Dokku
 
@@ -171,4 +171,4 @@ bun run start
 
 5. The app listens on `PORT` (set by Dokku). Open the app URL (e.g. `https://stock-trader.yourdomain.com`) to use the dashboard.
 
-The `CHECKS` file tells Dokku to wait 5 seconds after deploy, then `GET /`; the app is considered up when that returns 200.
+The `app.json` healthchecks tell Dokku to wait 5 seconds after deploy, then `GET /`; the app is considered up when that returns 200.
