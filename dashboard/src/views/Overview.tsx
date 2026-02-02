@@ -68,10 +68,21 @@ export default function Overview() {
   const fmt = formatCurrency;
   const equityNum = Number(acc.equity);
 
+  // Daily change: compare current equity to previous close (last point in 1D history)
+  const history = portfolioHistory.data ?? [];
+  const previousClose =
+    history.length >= 1 ? Number(history[history.length - 1].equity) : null;
+  let dailyChange: number | null = null;
+  let dailyChangePct: number | null = null;
+  if (previousClose != null && previousClose > 0) {
+    dailyChange = equityNum - previousClose;
+    dailyChangePct = (dailyChange / previousClose) * 100;
+  }
+
   // Chart data: use history if available, otherwise single point with current equity
   const chartData =
-    portfolioHistory.data && portfolioHistory.data.length > 0
-      ? portfolioHistory.data.map((s) => ({
+    history.length > 0
+      ? history.map((s) => ({
           date: s.createdAt,
           equity: Number(s.equity),
           label: formatShortDate(s.createdAt),
@@ -113,13 +124,25 @@ export default function Overview() {
                 <p className="font-mono-numeric mt-1 text-3xl font-semibold tabular-nums text-foreground sm:text-4xl">
                   ${fmt(acc.equity)}
                 </p>
-              </div>
-              {portfolioHistory.data?.length === 0 &&
-                !portfolioHistory.isLoading && (
-                  <p className="text-sm text-muted-foreground">
-                    No portfolio history from Alpaca yet
+                {dailyChange != null && dailyChangePct != null && (
+                  <p
+                    className={`font-mono-numeric mt-1 text-sm tabular-nums ${
+                      dailyChange >= 0
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-destructive"
+                    }`}
+                  >
+                    {dailyChange >= 0 ? "+" : ""}${fmt(dailyChange)} (
+                    {dailyChangePct >= 0 ? "+" : ""}
+                    {dailyChangePct.toFixed(2)}%) today
                   </p>
                 )}
+              </div>
+              {history.length === 0 && !portfolioHistory.isLoading && (
+                <p className="text-sm text-muted-foreground">
+                  No portfolio history from Alpaca yet
+                </p>
+              )}
             </div>
           </CardHeader>
           <CardContent className="pt-0">
