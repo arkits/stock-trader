@@ -17,5 +17,5 @@ RUN bun run build
 
 # Production: run server (serves dashboard from dashboard/dist, uses PORT from env)
 ENV NODE_ENV=production
-EXPOSE 3000
+EXPOSE 4108
 CMD ["bun", "run", "start"]

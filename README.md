@@ -35,7 +35,7 @@ Copy `.env.example` to `.env` and set the values below.
 | `SYMBOLS` | `AAPL,GOOGL,MSFT` | Comma-separated symbols to analyze and trade (allowlist). |
 | `MAX_ORDER_NOTIONAL` | — | Max dollar amount per order (e.g. `1000`). |
 | `DATA_DIR` | `data` | Directory for SQLite run history file. |
-| `PORT` | `3000` | HTTP server port. |
+| `PORT` | `4108` | HTTP server port. |
 
 ---
 
@@ -67,13 +67,13 @@ Builds the dashboard and typechecks the server.
 bun run start
 ```
 
-- Server: http://localhost:3000  
-- Dashboard: http://localhost:3000  
-- tRPC: http://localhost:3000/trpc  
+- Server: http://localhost:4108  
+- Dashboard: http://localhost:4108  
+- tRPC: http://localhost:4108/trpc  
 
 **Development:**
 
-- Terminal 1: `bun run dev:server` (server on port 3000)  
+- Terminal 1: `bun run dev:server` (server on port 4108)  
 - Terminal 2: `cd dashboard && bun run dev` (Vite on port 5173, proxies `/trpc` to server)
 
 ---

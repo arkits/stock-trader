@@ -50,7 +50,7 @@ app.use(
   })
 );
 
-const port = Number(process.env.PORT ?? 3000);
+const port = Number(process.env.PORT ?? 4108);
 
 console.log(`Server listening on http://localhost:${port}`);
 console.log(`tRPC at http://localhost:${port}/trpc`);
