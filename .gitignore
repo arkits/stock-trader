@@ -1,0 +1,11 @@
+.env
+.env.local
+.env.*.local
+node_modules/
+dashboard/node_modules/
+dashboard/dist/
+dashboard/tsconfig.tsbuildinfo
+data/
+*.db
+*.log
+.DS_Store
