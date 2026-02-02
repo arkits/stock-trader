@@ -63,7 +63,10 @@ setInterval(() => {
   runNow().catch((err) => console.error("Scheduled run failed:", err));
 }, intervalMs);
 
+const hostname = process.env.HOSTNAME ?? "0.0.0.0";
+
 Bun.serve({
   port,
+  hostname,
   fetch: app.fetch,
 });
