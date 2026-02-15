@@ -293,7 +293,7 @@ export function insertPaperTrades(trades: Array<Omit<PaperTrade, "id" | "created
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)`
   );
   for (const t of trades) {
-    stmt.run([
+    stmt.run(
       t.symbol,
       createdAt,
       t.entryAt,
@@ -302,12 +302,12 @@ export function insertPaperTrades(trades: Array<Omit<PaperTrade, "id" | "created
       t.score,
       t.confidence,
       JSON.stringify(t.factors),
-      t.notes ?? null,
-    ]);
+      t.notes ?? null
+    );
   }
   database.run(
     `DELETE FROM paper_trades WHERE id NOT IN (SELECT id FROM paper_trades ORDER BY id DESC LIMIT ?)`,
-    [MAX_PAPER_TRADES]
+    [MAX_PAPER_TRADES] as unknown as any
   );
 }
 
@@ -367,7 +367,7 @@ export function closePaperTrades(
     `UPDATE paper_trades SET status = 'closed', exit_at = ?, exit_price = ?, return_pct = ?, notes = ? WHERE id = ?`
   );
   for (const c of closings) {
-    stmt.run([c.exitAt, c.exitPrice, c.returnPct, c.notes ?? null, c.id]);
+    stmt.run(c.exitAt, c.exitPrice, c.returnPct, c.notes ?? null, c.id);
   }
 }
 
@@ -398,6 +398,33 @@ export function getLatestResearchWeights(): ResearchWeightRecord | null {
     createdAt: row.created_at,
     weights: JSON.parse(row.weights) as Record<string, number>,
     note: row.note ?? undefined,
+  };
+}
+
+export function getResearchRunByRunId(runId: number): ResearchRunRecord | null {
+  const database = getDb();
+  const row = database
+    .query(
+      `SELECT id, run_id, created_at, research, adversarial, analysis FROM research_runs WHERE run_id = ? ORDER BY id DESC LIMIT 1`
+    )
+    .get(runId) as
+    | {
+        id: number;
+        run_id: number;
+        created_at: string;
+        research: string;
+        adversarial: string | null;
+        analysis: string | null;
+      }
+    | undefined;
+  if (!row) return null;
+  return {
+    id: row.id,
+    runId: row.run_id,
+    createdAt: row.created_at,
+    research: JSON.parse(row.research),
+    adversarial: row.adversarial ? JSON.parse(row.adversarial) : null,
+    analysis: row.analysis ? JSON.parse(row.analysis) : null,
   };
 }
 

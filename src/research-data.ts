@@ -142,11 +142,39 @@ export function loadResearchData(dir?: string): ResearchData {
     sources: {},
   };
   for (const [key, file] of fileMap) {
-    const value = readJsonIfExists<ResearchFileSet[typeof key]>(
-      join(baseDir, file)
-    );
-    if (value != null) {
-      (data as ResearchFileSet)[key] = value as ResearchFileSet[typeof key];
+    const value = readJsonIfExists<unknown>(join(baseDir, file));
+    if (value == null) continue;
+    switch (key) {
+      case "fundamentals":
+        data.fundamentals = value as Record<string, Fundamentals>;
+        break;
+      case "technicals":
+        data.technicals = value as Record<string, Technicals>;
+        break;
+      case "macro":
+        data.macro = value as MacroData;
+        break;
+      case "news":
+        data.news = value as Record<string, NewsItem[]>;
+        break;
+      case "earnings":
+        data.earnings = value as Record<string, EarningsCallSummary[]>;
+        break;
+      case "insider":
+        data.insider = value as Record<string, InsiderActivity>;
+        break;
+      case "institutional":
+        data.institutional = value as Record<string, InstitutionalFlow>;
+        break;
+      case "liquidity":
+        data.liquidity = value as Record<string, LiquidityMetrics>;
+        break;
+      case "risk":
+        data.risk = value as Record<string, RiskFlags>;
+        break;
+      case "sources":
+        data.sources = value as Record<string, string[]>;
+        break;
     }
   }
   const updatedAt = readJsonIfExists<{ updatedAt?: string }>(

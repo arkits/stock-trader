@@ -1,8 +1,8 @@
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import type { AlpacaClient } from "../alpaca";
 import type { Config, SafeConfig } from "../config";
-import type { RunRecord } from "../db";
-import { getLastRun, getRunHistory } from "../db";
+import type { RunRecord, ResearchRunRecord } from "../db";
+import { getLastRun, getRunHistory, getResearchRunByRunId } from "../db";
 
 export type Context = {
   alpaca: AlpacaClient;
@@ -10,6 +10,7 @@ export type Context = {
   getSafeConfig: () => SafeConfig;
   getLastRun: () => RunRecord | null;
   getRunHistory: (limit: number) => RunRecord[];
+  getResearchRunByRunId: (runId: number) => ResearchRunRecord | null;
 };
 
 export function createContext(params: {
@@ -24,6 +25,7 @@ export function createContext(params: {
     }),
     getLastRun,
     getRunHistory,
+    getResearchRunByRunId,
   };
 }
 

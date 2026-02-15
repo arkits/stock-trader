@@ -252,7 +252,7 @@ function buildContext(params: {
   researchContext?: ResearchContext;
 }): string {
   const { account, positions, openOrders, snapshots, recentRuns, researchContext } = params;
-  const payload: Record<string, unknown> = {
+  const payload: Record<string, any> = {
     account: {
       equity: account.equity,
       buyingPower: account.buyingPower,

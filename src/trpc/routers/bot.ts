@@ -14,6 +14,11 @@ export function createBotRouter(runNow: () => Promise<void>) {
       .query(({ ctx, input }) => {
         return ctx.getRunHistory(input);
       }),
+    getResearchRun: publicProcedure
+      .input(z.number())
+      .query(({ ctx, input }) => {
+        return ctx.getResearchRunByRunId(input);
+      }),
     runNow: publicProcedure.mutation(async () => {
       await runNow();
     }),

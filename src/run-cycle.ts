@@ -242,7 +242,7 @@ function updateWeightsFromClosures(
   closures: Array<{ id: number; returnPct: number }>,
   openTrades: Array<{ id: number; factors: Record<string, number> }>,
   config: Config
-): Record<string, number> | null {
+): Config["trading"]["research"]["weights"] | null {
   if (closures.length < 3) return null;
   const tradeMap = new Map(openTrades.map((t) => [t.id, t]));
   const winners: Record<string, number[]> = {};
@@ -257,9 +257,10 @@ function updateWeightsFromClosures(
       bucket[k] = list;
     }
   }
-  const weights = { ...config.trading.research.weights } as Record<string, number>;
+  const weights = { ...config.trading.research.weights } as Config["trading"]["research"]["weights"];
   const lr = 0.05;
-  for (const key of Object.keys(weights)) {
+  const keys = Object.keys(weights) as Array<keyof typeof weights>;
+  for (const key of keys) {
     const winAvg = average(winners[key]);
     const loseAvg = average(losers[key]);
     if (winAvg == null || loseAvg == null) continue;
@@ -267,7 +268,7 @@ function updateWeightsFromClosures(
     weights[key] = weights[key] + lr * delta;
   }
   const sum = Object.values(weights).reduce((a, b) => a + b, 0) || 1;
-  for (const key of Object.keys(weights)) {
+  for (const key of keys) {
     weights[key] = weights[key] / sum;
   }
   return weights;

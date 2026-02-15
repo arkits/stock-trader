@@ -22,6 +22,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { trpc } from "../trpc";
+import { isUSRegularMarketHours } from "@/lib/market-hours";
+import { useEffect, useState } from "react";
 
 function formatCurrency(n: string | number): string {
   return Number(n).toLocaleString(undefined, {
@@ -48,6 +50,12 @@ export default function Overview() {
   });
   const positions = trpc.positions.getAll.useQuery();
   const orders = trpc.orders.getOpen.useQuery();
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
 
   if (account.isLoading || account.isError) {
     return (
@@ -67,6 +75,7 @@ export default function Overview() {
 
   const fmt = formatCurrency;
   const equityNum = Number(acc.equity);
+  const marketOpen = isUSRegularMarketHours(now);
 
   // Daily change: compare current equity to previous close (last point in 1D history)
   const history = portfolioHistory.data ?? [];
@@ -257,9 +266,13 @@ export default function Overview() {
                 <p className="mt-1 text-lg font-semibold">
                   {acc.tradingBlocked ? (
                     <span className="text-destructive">Blocked</span>
-                  ) : (
+                  ) : marketOpen ? (
                     <span className="text-emerald-600 dark:text-emerald-400">
                       Active
+                    </span>
+                  ) : (
+                    <span className="text-amber-600 dark:text-amber-400">
+                      After hours
                     </span>
                   )}
                 </p>
